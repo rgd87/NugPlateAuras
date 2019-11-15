@@ -364,7 +364,7 @@ end
 function NugPlateAuras:TestFloatingIcons()
     local unit
     for i=1,20 do
-        unit = "Plate"..i
+        unit = "namelate"..i
         if UnitExists(unit) and not UnitIsFriend(unit, "player") then break end
     end
     self:UNIT_AURA_GAINED(nil, unit, 17, "BUFF")
