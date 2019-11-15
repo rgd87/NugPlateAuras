@@ -428,22 +428,17 @@ end
 
 
 local helpMessage = {
-    "|cff00ff00/ncf lock|r",
-    "|cff00ff00/ncf unlock|r",
-    "|cff00ff00/ncf direction|r <TOP|LEFT||RIGHT|BOTTOM>",
+    "|cff00ff00/npa gui|r",
 }
 
 
 NugPlateAuras.Commands = {
-    ["unlock"] = function(v)
-        NugPlateAuras.anchor:Show()
-    end,
-    ["lock"] = function(v)
-        NugPlateAuras.anchor:Hide()
-    end,
-    ["direction"] = function(v)
-        NCFDB.direction = string.upper(v)
-        NugPlateAuras:UpdateSettings()
+    ["gui"] = function(v)
+        if not NugPlateAuras.optionsPanel then
+            NugPlateAuras.optionsPanel = NugPlateAuras:CreateGUI()
+        end
+        InterfaceOptionsFrame_OpenToCategory("NugPlateAuras")
+        InterfaceOptionsFrame_OpenToCategory("NugPlateAuras")
     end,
 }
 

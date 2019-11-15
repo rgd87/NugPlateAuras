@@ -109,5 +109,6 @@ globals = {
 	"InterfaceOptionsFrame",
 	"CopyTable",
 	"GetSpellInfo",
-	"CreateFramePool"
+	"CreateFramePool",
+	"InterfaceOptionsFrame_OpenToCategory",
 }
