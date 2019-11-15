@@ -1,0 +1,27 @@
+#@retail@
+## Interface: 80205
+#@end-retail@
+#@non-retail@
+# ## Interface: 11302
+#@end-non-retail@
+
+## Title: NugPlateAuras
+## SavedVariables: NugPlateAurasDB
+## Author: d87
+## OptionalDeps: Masque
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\LibAuraTypes\LibAuraTypes.lua
+Libs\LibSpellLocks\LibSpellLocks.lua
+Libs\LibCustomGlow\LibCustomGlow-1.0.xml
+
+#@non-retail@
+# Libs\LibClassicDurations\LibClassicDurations.xml
+#@end-non-retail@
+
+NugPlateAuras.lua
+Frame.lua
+Options.lua
