@@ -11,6 +11,7 @@
 ## OptionalDeps: Masque
 
 ## X-WoWI-ID: 25439
+## X-Curse-Project-ID: 351554
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
