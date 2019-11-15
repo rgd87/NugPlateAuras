@@ -109,4 +109,5 @@ globals = {
 	"InterfaceOptionsFrame",
 	"CopyTable",
 	"GetSpellInfo",
+	"CreateFramePool"
 }
