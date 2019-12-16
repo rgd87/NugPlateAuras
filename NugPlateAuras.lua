@@ -14,7 +14,6 @@ local LibSpellLocks
 local LibCustomGlow
 local LibClassicDurations
 
-local ICON_POOL_SIZE = 3
 local Masque = LibStub("Masque", true)
 local MasqueGroup
 NugPlateAuras:RegisterEvent("ADDON_LOADED")
@@ -77,6 +76,7 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
         LibCustomGlow = LibStub("LibCustomGlow-1.0")
         if isClassic then
             LibClassicDurations = LibStub("LibClassicDurations")
+            LibClassicDurations:Register(addonName)
             UnitAura = LibClassicDurations.UnitAuraWithBuffs
             LibClassicDurations.RegisterCallback(self, "UNIT_BUFF", function(event, unit)
                 self:UNIT_AURA(event, unit)
@@ -102,22 +102,15 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
             end
         end)
 
-
-
         if Masque and db.enableMasque then
             ns.MasqueGroup = Masque:Group(addonName, "NugPlateAuras")
         end
-        -- self:SpawnIconLine("player")
-        self:SetSize(30, 30)
 
         self:RegisterEvent("NAME_PLATE_CREATED")
         self:RegisterEvent("NAME_PLATE_UNIT_ADDED")
         self:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 
         self:RegisterEvent("UNIT_AURA")
-
-        -- self.anchor = self:CreateAnchor()
-        -- self:SetPoint("BOTTOMLEFT", self.anchor, "TOPRIGHT", 0, 0)
 
         SLASH_NUGPLATEAURAS1 = "/nugplateauras"
         SLASH_NUGPLATEAURAS2 = "/npa"
@@ -182,8 +175,6 @@ function NugPlateAuras:CreateHeader(parent)
     parent.NugPlateAurasFrame = hdr
     hdr:SetSize(10,10)
     hdr:SetPoint("BOTTOM", parent, "TOP", db.npOffsetX, db.npOffsetY)
-    -- local test = self:CreateMirrorButton(parent)
-    -- test:SetPoint("BOTTOM", parent, "TOP",0,10)
     hdr.auras = { }
     hdr.AddAura = AddAuraFrameToHeader
     if db.enableBuffGains then
@@ -390,41 +381,6 @@ function NugPlateAuras:SpawnIconLine(unit)
     self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
     return self
 end
-
-
-
--- function NugPlateAuras:UpdateSettings()
---     local scaleOrigin, revOrigin, translateX, translateY
---     if NCFDB.direction == "RIGHT" then
---         scaleOrigin = "LEFT"
---         revOrigin = "RIGHT"
---         translateX = 100
---         translateY = 0
---     elseif NCFDB.direction == "TOP" then
---         scaleOrigin = "BOTTOM"
---         revOrigin = "TOP"
---         translateX = 0
---         translateY = 100
---     elseif NCFDB.direction == "BOTTOM" then
---         scaleOrigin = "TOP"
---         revOrigin = "BOTTOM"
---         translateX = 0
---         translateY = -100
---     else
---         scaleOrigin = "RIGHT"
---         revOrigin = "LEFT"
---         translateX = -100
---         translateY = 0
---     end
---     for i, frame in ipairs(self.iconpool) do
---         local ag = frame.ag
---         ag.s1:SetOrigin(scaleOrigin, 0,0)
---         ag.s2:SetOrigin(scaleOrigin, 0,0)
---         ag.t1:SetOffset(translateX, translateY)
---         frame:ClearAllPoints()
---         frame:SetPoint(scaleOrigin, self.mirror, revOrigin, 0,0)
---     end
--- end
 
 
 local helpMessage = {
