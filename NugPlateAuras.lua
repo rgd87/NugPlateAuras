@@ -184,6 +184,75 @@ function NugPlateAuras:CreateHeader(parent)
 end
 
 
+local function MakeFakeAuraFromID(spellID, filter)
+    local now = GetTime()
+    local name, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellID)
+    local duration = nil
+    local expirationTime = nil
+    return { name, icon, 1, nil, duration, expirationTime, nil, nil, nil, spellID }
+end
+
+local FakeAuras = {
+    HELPFUL = {
+        MakeFakeAuraFromID(122470, "HELPFUL"), -- karma
+        MakeFakeAuraFromID(122278, "HELPFUL"), -- Dampen Harm
+        MakeFakeAuraFromID(871, "HELPFUL"), -- Shield Wall
+        MakeFakeAuraFromID(1715, "HELPFUL"), -- Hamstring
+        MakeFakeAuraFromID(47536, "HELPFUL"), -- Rapture
+        MakeFakeAuraFromID(194249, "HELPFUL"), -- Voidform
+        MakeFakeAuraFromID(1044, "HELPFUL"), -- Freedom
+        MakeFakeAuraFromID(8178, "HELPFUL"), -- Grounding
+        MakeFakeAuraFromID(5277, "HELPFUL"), -- Evasion
+    },
+    HARMFUL = {
+        MakeFakeAuraFromID(119381, "HARMFUL"), -- Leg sweep
+        MakeFakeAuraFromID(853, "HARMFUL"), -- Hammer of Justice
+        MakeFakeAuraFromID(115078, "HARMFUL"), -- Paralysis
+        MakeFakeAuraFromID(118, "HARMFUL"), -- Polymorph
+        MakeFakeAuraFromID(23920, "HARMFUL"), -- Spell Reflection
+        MakeFakeAuraFromID(5246, "HARMFUL"), -- Intimidating Shout
+        MakeFakeAuraFromID(15487, "HARMFUL"), -- Silence
+        MakeFakeAuraFromID(64695, "HARMFUL"), -- Earthgrab Totem
+    }
+}
+
+local FakeAuraSlots = {
+    HARMFUL = {},
+    HELPFUL = {},
+}
+local function GenFakeSlots()
+    local uniqueTable = {}
+    local filters = { "HELPFUL", "HARMFUL" }
+    for _, filter in ipairs(filters) do
+        local stock = FakeAuras[filter]
+        local auras = FakeAuraSlots[filter]
+        local num = math.random(3)
+        table.wipe(auras)
+        for i=1,num do
+            local index
+            local data
+            repeat
+                index = math.random(#stock)
+                data = stock[index]
+            until not uniqueTable[index]
+
+            local now = GetTime()
+            local duration = math.random(8)+8
+            data[5] = duration
+            data[6] = now+duration
+
+            uniqueTable[index] = true
+            table.insert(auras, data)
+        end
+    end
+end
+local function TestUnitAura(unit, index, filter)
+    local slot = FakeAuraSlots[filter][index]
+    FAKESLOTS = FakeAuraSlots
+    if slot then return unpack(slot) end
+end
+
+
 local sortfunc = function(a,b) return a[3] > b[3] end
 local orderedAuras = {}
 function NugPlateAuras:UNIT_AURA(event, unit)
@@ -295,7 +364,7 @@ function NugPlateAuras:UNIT_AURA(event, unit)
     end
 end
 
-function NugPlateAuras:ForEachPlate(func)
+function NugPlateAuras:ForEachNameplate(func)
     for unit in pairs(activePlateUnits) do
         local np = C_NamePlate.GetNamePlateForUnit(unit)
         if np then
@@ -355,14 +424,26 @@ end
 function NugPlateAuras:TestFloatingIcons()
     local unit
     for i=1,20 do
-        unit = "namelate"..i
+        unit = "nameplate"..i
         if UnitExists(unit) and not UnitIsFriend(unit, "player") then break end
     end
     self:UNIT_AURA_GAINED(nil, unit, 17, "BUFF")
 end
 
+function NugPlateAuras:TestAuras()
+    local unit
+    for i=1,20 do
+        unit = "nameplate"..i
+        if UnitExists(unit) and not UnitIsFriend(unit, "player") then break end
+    end
+
+    UnitAura = TestUnitAura
+    GenFakeSlots()
+    self:UNIT_AURA(nil, unit)
+    UnitAura = _G.UnitAura
+end
+
 function NugPlateAuras:UNIT_AURA_GAINED(event, unit, spellID, auraType)
-    -- print("Gained", spellID)
     if activePlateUnits[unit] then
         local np = C_NamePlate.GetNamePlateForUnit(unit)
         local hdr = np.NugPlateAurasFrame

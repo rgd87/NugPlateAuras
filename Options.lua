@@ -115,13 +115,21 @@ function NugPlateAuras:CreateGUI()
                     ReloadUI()
                 end
             },
-            unlock = {
+            testGains = {
                 name = L"Test Buff Gains",
                 disabled = function() return not NugPlateAurasDB.enableBuffGains end,
                 type = "execute",
                 desc = "At least one enemy nameplate should be visible",
                 func = function() NugPlateAuras:TestFloatingIcons() end,
                 order = 8,
+            },
+
+            testAuras = {
+                name = L"Test Auras",
+                type = "execute",
+                desc = "At least one enemy nameplate should be visible",
+                func = function() NugPlateAuras:TestAuras() end,
+                order = 9,
             },
 
         },
