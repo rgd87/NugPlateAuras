@@ -33,6 +33,43 @@ function NugPlateAuras:CreateGUI()
                 step = 1,
                 order = 1,
             },
+            attachPoint = {
+                name = "Attachment Point",
+                type = 'select',
+                width = 1.5,
+                order = 1.1,
+                values = {
+                    TOP = "TOP",
+                    LEFT = "LEFT",
+                    RIGHT = "RIGHT",
+                },
+                get = function(info)
+                    return NugPlateAurasDB.attachPoint
+                end,
+                set = function(info, v)
+                    NugPlateAurasDB.attachPoint = v
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                end,
+            },
+            auraGrowth = {
+                name = "Aura Growth",
+                type = 'select',
+                width = 1.5,
+                order = 1.2,
+                values = {
+                    TOP = "TOP",
+                    LEFT = "LEFT",
+                    RIGHT = "RIGHT",
+                    BOTTOM = "BOTTOM",
+                },
+                get = function(info)
+                    return NugPlateAurasDB.auraGrowth
+                end,
+                set = function(info, v)
+                    NugPlateAurasDB.auraGrowth = v
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                end,
+            },
             npOffsetX = {
                 name = L"Nameplate X Offset",
                 type = "range",

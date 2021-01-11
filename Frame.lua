@@ -223,3 +223,63 @@ function NugPlateAuras:CreateFloatingIconPool(hdr)
 
     return iconPool
 end
+
+local MIRROR_POINTS = {
+	["TOPLEFT"] = "BOTTOMRIGHT",
+	["LEFT"] = "RIGHT",
+	["BOTTOMLEFT"] = "TOPRIGHT",
+	["TOPRIGHT"] = "BOTTOMLEFT",
+	["RIGHT"] = "LEFT",
+	["BOTTOMRIGHT"] = "TOPLEFT",
+	["CENTER"] = "CENTER",
+	["TOP"] = "BOTTOM",
+	["BOTTOM"] = "TOP",
+};
+
+local MIRROR_POINTS_HORIZONTAL = {
+	["TOPLEFT"] = "TOPRIGHT",
+	["LEFT"] = "RIGHT",
+	["BOTTOMLEFT"] = "BOTTOMRIGHT",
+	["TOPRIGHT"] = "TOPLEFT",
+	["RIGHT"] = "LEFT",
+	["BOTTOMRIGHT"] = "BOTTOMLEFT",
+	["CENTER"] = "CENTER",
+	["TOP"] = "TOP",
+	["BOTTOM"] = "BOTTOM",
+};
+
+local MIRROR_POINTS_VERTICAL = {
+	["TOPLEFT"] = "BOTTOMLEFT",
+	["LEFT"] = "LEFT",
+	["BOTTOMLEFT"] = "TOPLEFT",
+	["TOPRIGHT"] = "BOTTOMRIGHT",
+	["RIGHT"] = "RIGHT",
+	["BOTTOMRIGHT"] = "TOPRIGHT",
+	["CENTER"] = "CENTER",
+	["TOP"] = "BOTTOM",
+	["BOTTOM"] = "TOP",
+};
+function ns.ReverseOrientation(direction)
+    if direction == "HORIZONTAL" then
+        return "VERTICAL"
+    else
+        return "HORIZONTAL"
+    end
+end
+
+function ns.Reverse(p1, direction)
+    local mirrorTable = MIRROR_POINTS
+    if direction == "HORIZONTAL" then
+        mirrorTable = MIRROR_POINTS_HORIZONTAL
+    elseif direction == "VERTICAL" then
+        mirrorTable = MIRROR_POINTS_VERTICAL
+    end
+    local p2 = mirrorTable[p1]
+
+    if p2 == "RIGHT" or p2 == "LEFT" then
+        return p2, "HORIZONTAL"
+    elseif p2 == "TOP" or p2 == "BOTTOM" then
+        return p2, "VERTICAL"
+    end
+    return p2
+end

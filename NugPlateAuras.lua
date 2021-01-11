@@ -26,10 +26,12 @@ local PlateGUIDtoUnit = {}
 local defaults = {
     enableMasque = false,
     enableBuffGains = true,
+    attachPoint = "TOP",
+    auraGrowth = "RIGHT",
     maxAuras = 3,
     priorityThreshold = 50,
     auraSize = 25,
-    auraOffsetX = 2,
+    auraGap = 2,
     npOffsetX = 0,
     npOffsetY = 10,
     floatingOffsetX = 0,
@@ -130,7 +132,7 @@ function NugPlateAuras.NAME_PLATE_CREATED(self, event, np)
 end
 
 function NugPlateAuras.NAME_PLATE_UNIT_ADDED(self, event, unit)
-    if UnitIsUnit(unit, "player") or UnitIsFriend(unit, "player") then return end
+    if UnitIsUnit(unit, "player") or UnitReaction(unit, "player") >= 5 then return end
     local np = C_NamePlate.GetNamePlateForUnit(unit)
     activePlateUnits[unit] = true
     PlateGUIDtoUnit[UnitGUID(unit)] = unit
@@ -151,32 +153,57 @@ function NugPlateAuras.NAME_PLATE_UNIT_REMOVED(self, event, unit)
     end
 end
 
-local AddAuraFrameToHeader = function(self, auraFrame)
-    local numAuras = #self.auras
-    if numAuras > 0 then
-        local prev = self.auras[numAuras]
-        -- local newIndex = numAuras+1
-        -- local isEven = math.fmod(newIndex, 2) == 0
 
-        -- if isEven then
-            -- local prev = self.auras[newIndex-2] or self.auras[1]
-            auraFrame:SetPoint("BOTTOMLEFT", prev, "BOTTOMRIGHT", db.auraOffsetX, 0)
-        -- else
-        --     local prev = self.auras[newIndex-2] or self.auras[1]
-        --     auraFrame:SetPoint("BOTTOMRIGHT", prev, "BOTTOMLEFT", -db.auraOffsetX, 0)
-        -- end
-    else
-        auraFrame:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
+local RepositionAuraFrames = function(hdr)
+    local size = db.auraSize
+    local numAuras = #hdr.auras
+    local _, orientation = ns.Reverse(db.auraGrowth)
+
+    local p1 = ns.Reverse(db.auraGrowth)
+    local p2 = orientation == "VERTICAL" and "LEFT" or "TOP"
+    local p = orientation == "VERTICAL" and p1..p2 or p2..p1
+    local mp = ns.Reverse(p, orientation)
+    local xgap = orientation == "HORIZONTAL" and db.auraGap or 0
+    xgap = db.auraGrowth == "RIGHT" and xgap or -xgap
+
+    local ygap = orientation == "VERTICAL" and db.auraGap or 0
+    ygap = db.auraGrowth == "TOP" and ygap or -ygap
+
+    for i=1, numAuras do
+        local btn = hdr.auras[i]
+        btn:ClearAllPoints()
+        btn:SetSize(size, size)
+        if i > 1 then
+            local prev = hdr.auras[i-1]
+            btn:SetPoint(p, prev, mp, xgap, ygap)
+        else
+            btn:SetPoint(p, hdr, p, 0, 0)
+        end
     end
+end
+
+local AddAuraFrameToHeader = function(self, auraFrame)
     table.insert(self.auras, auraFrame)
+    self:RepositionAuraFrames()
 end
 function NugPlateAuras:CreateHeader(parent)
     local hdr = CreateFrame("Frame", "$parentNPAHeader", parent)
     parent.NugPlateAurasFrame = hdr
+
+    -- local t = hdr:CreateTexture("ARTWORK")
+    -- t:SetTexture("Interface\\BUTTONS\\WHITE8X8")
+    -- t:SetAllPoints(hdr)
+
     hdr:SetSize(10,10)
-    hdr:SetPoint("BOTTOM", parent, "TOP", db.npOffsetX, db.npOffsetY)
+    if db.attachPoint == "TOP" then
+        -- hdr:SetPoint("BOTTOM", parent, "TOP", db.npOffsetX, db.npOffsetY)
+        hdr:SetPoint(ns.Reverse(db.attachPoint), parent, db.attachPoint, db.npOffsetX, db.npOffsetY)
+    else
+        hdr:SetPoint(ns.Reverse(db.attachPoint), parent, db.attachPoint, db.npOffsetX, db.npOffsetY)
+    end
     hdr.auras = { }
     hdr.AddAura = AddAuraFrameToHeader
+    hdr.RepositionAuraFrames = RepositionAuraFrames
     if db.enableBuffGains then
         hdr.iconPool = NugPlateAuras:CreateFloatingIconPool(hdr)
     end
@@ -294,7 +321,7 @@ function NugPlateAuras:UNIT_AURA(event, unit)
         table.sort(orderedAuras, sortfunc)
 
         local shown = 0
-        local headerWidth = 0
+        local headerLength = 0
         local AURA_MAX_DISPLAY = db.maxAuras
 
         for i=1,100 do
@@ -345,9 +372,9 @@ function NugPlateAuras:UNIT_AURA(event, unit)
 
             btn:Show()
 
-            headerWidth = headerWidth + (db.auraSize*scale)
+            headerLength = headerLength + (db.auraSize*scale)
             if shown > 0 then
-                headerWidth = headerWidth + db.auraOffsetX
+                headerLength = headerLength + db.auraGap
             end
 
             shown = shown + 1
@@ -355,10 +382,18 @@ function NugPlateAuras:UNIT_AURA(event, unit)
         end
 
         if shown > 0 then
-            hdr:SetWidth(headerWidth)
+            local _, orientation = ns.Reverse(db.auraGrowth)
+            if orientation == "HORIZONTAL" then
+                hdr:SetWidth(headerLength)
+                hdr:SetHeight(10)
+            else
+                hdr:SetHeight(headerLength)
+                hdr:SetWidth(10)
+            end
             -- hdr:Show()
         else
             hdr:SetWidth(10)
+            hdr:SetHeight(10)
             -- hdr:Hide()
         end
     end
@@ -383,19 +418,11 @@ function NugPlateAuras.ReconfigureHeader(unit, np)
         end
     end
 
-    hdr:SetPoint("BOTTOM", hdr:GetParent(), "TOP", db.npOffsetX, db.npOffsetY)
+    hdr:ClearAllPoints()
+    hdr:SetPoint(ns.Reverse(db.attachPoint), hdr:GetParent(), db.attachPoint, db.npOffsetX, db.npOffsetY)
+    -- hdr:SetPoint("BOTTOM", hdr:GetParent(), "TOP", db.npOffsetX, db.npOffsetY)
 
-    local size = db.auraSize
-    for i=1, numAuras do
-        local btn = hdr.auras[i]
-        btn:SetSize(size, size)
-        if i > 1 then
-            local prev = hdr.auras[i-1]
-            btn:SetPoint("BOTTOMLEFT", prev, "BOTTOMRIGHT", db.auraOffsetX, 0)
-        else
-            btn:SetPoint("BOTTOMLEFT", hdr, "BOTTOMLEFT", 0, 0)
-        end
-    end
+    hdr:RepositionAuraFrames()
 
     NugPlateAuras:UNIT_AURA(nil, unit)
 end
@@ -425,7 +452,7 @@ function NugPlateAuras:TestFloatingIcons()
     local unit
     for i=1,20 do
         unit = "nameplate"..i
-        if UnitExists(unit) and not UnitIsFriend(unit, "player") then break end
+        if UnitExists(unit) and UnitReaction(unit, "player") < 5 then break end
     end
     self:UNIT_AURA_GAINED(nil, unit, 17, "BUFF")
 end
@@ -434,7 +461,7 @@ function NugPlateAuras:TestAuras()
     local unit
     for i=1,20 do
         unit = "nameplate"..i
-        if UnitExists(unit) and not UnitIsFriend(unit, "player") then break end
+        if UnitExists(unit) and UnitReaction(unit, "player") < 5 then break end
     end
 
     UnitAura = TestUnitAura
