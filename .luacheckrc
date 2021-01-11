@@ -112,4 +112,6 @@ globals = {
     "CreateFramePool",
     "InterfaceOptionsFrame_OpenToCategory",
     "GetTime",
+    "UnitReaction",
+    "UnitCanAttack",
 }
