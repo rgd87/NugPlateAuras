@@ -6,6 +6,7 @@ externals:
   Libs/CallbackHandler-1.0: https://repos.wowace.com/wow/ace3/trunk/CallbackHandler-1.0
   Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
   Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
+  Libs/AceDB-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDB-3.0
   Libs/LibAuraTypes: https://github.com/rgd87/LibAuraTypes.git
   Libs/LibCustomGlow: https://github.com/Stanzilla/LibCustomGlow.git
 

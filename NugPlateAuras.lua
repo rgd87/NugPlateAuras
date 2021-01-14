@@ -24,54 +24,46 @@ local activePlateUnits = {}
 local PlateGUIDtoUnit = {}
 
 local defaults = {
-    enableMasque = false,
-    enableBuffGains = true,
-    attachPoint = "TOP",
-    auraGrowth = "RIGHT",
-    maxAuras = 3,
-    priorityThreshold = 50,
-    auraSize = 25,
-    auraGap = 2,
-    npOffsetX = 0,
-    npOffsetY = 10,
-    floatingOffsetX = 0,
-    floatingOffsetY = -15,
+    profile = {
+        enableMasque = false,
+        enableBuffGains = true,
+        splitAuras = true,
+        buffs = {
+            attachPoint = "TOP",
+            auraGrowth = "RIGHT",
+            maxAuras = 3,
+            priorityThreshold = 50,
+            auraSize = 25,
+            auraGap = 2,
+            npOffsetX = 0,
+            npOffsetY = 10,
+        },
+        debuffs = {
+            attachPoint = "TOP",
+            auraGrowth = "RIGHT",
+            maxAuras = 3,
+            priorityThreshold = 50,
+            auraSize = 25,
+            auraGap = 2,
+            npOffsetX = 0,
+            npOffsetY = 10,
+        },
+        floatingOffsetX = 0,
+        floatingOffsetY = -15,
+    }
 }
-
-local function SetupDefaults(t, defaults)
-    for k,v in pairs(defaults) do
-        if type(v) == "table" then
-            if t[k] == nil then
-                t[k] = CopyTable(v)
-            else
-                SetupDefaults(t[k], v)
-            end
-        else
-            if t[k] == nil then t[k] = v end
-        end
-    end
-end
-local function RemoveDefaults(t, defaults)
-    for k, v in pairs(defaults) do
-        if type(t[k]) == 'table' and type(v) == 'table' then
-            RemoveDefaults(t[k], v)
-            if next(t[k]) == nil then
-                t[k] = nil
-            end
-        elseif t[k] == v then
-            t[k] = nil
-        end
-    end
-    return t
-end
 
 function NugPlateAuras.ADDON_LOADED(self,event,arg1)
     if arg1 == addonName then
 
         NugPlateAurasDB = NugPlateAurasDB or {}
-        db = NugPlateAurasDB
-        SetupDefaults(NugPlateAurasDB, defaults)
-        self:RegisterEvent("PLAYER_LOGOUT")
+        self:DoMigrations(NugPlateAurasDB)
+        self.db = LibStub("AceDB-3.0"):New("NugPlateAurasDB", defaults, "Default") -- Create a DB using defaults and using a shared default profile
+        db = self.db
+
+        self.db.RegisterCallback(self, "OnProfileChanged", "Reconfigure")
+        self.db.RegisterCallback(self, "OnProfileCopied", "Reconfigure")
+        self.db.RegisterCallback(self, "OnProfileReset", "Reconfigure")
 
         LibAuraTypes = LibStub("LibAuraTypes")
         LibSpellLocks = LibStub("LibSpellLocks")

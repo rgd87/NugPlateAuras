@@ -17,6 +17,7 @@ Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
 Libs\LibAuraTypes\LibAuraTypes.lua
 Libs\LibSpellLocks\LibSpellLocks.lua
 Libs\LibCustomGlow\LibCustomGlow-1.0.xml
@@ -28,3 +29,4 @@ Libs\LibCustomGlow\LibCustomGlow-1.0.xml
 NugPlateAuras.lua
 Frame.lua
 Options.lua
+Migrations.lua
