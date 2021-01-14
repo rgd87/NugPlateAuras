@@ -26,7 +26,7 @@ function NugPlateAuras:CreateGUI()
                 get = function(info) return NugPlateAurasDB.maxAuras end,
                 set = function(info, v)
                     NugPlateAurasDB.maxAuras = tonumber(v)
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
                 min = 1,
                 max = 8,
@@ -48,7 +48,7 @@ function NugPlateAuras:CreateGUI()
                 end,
                 set = function(info, v)
                     NugPlateAurasDB.attachPoint = v
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
             },
             auraGrowth = {
@@ -67,7 +67,7 @@ function NugPlateAuras:CreateGUI()
                 end,
                 set = function(info, v)
                     NugPlateAurasDB.auraGrowth = v
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
             },
             npOffsetX = {
@@ -76,7 +76,7 @@ function NugPlateAuras:CreateGUI()
                 get = function(info) return NugPlateAurasDB.npOffsetX end,
                 set = function(info, v)
                     NugPlateAurasDB.npOffsetX = tonumber(v)
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
                 min = -150,
                 max = 150,
@@ -89,7 +89,7 @@ function NugPlateAuras:CreateGUI()
                 get = function(info) return NugPlateAurasDB.npOffsetY end,
                 set = function(info, v)
                     NugPlateAurasDB.npOffsetY = tonumber(v)
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
                 min = -150,
                 max = 150,
@@ -119,7 +119,7 @@ function NugPlateAuras:CreateGUI()
                 get = function(info) return NugPlateAurasDB.auraSize end,
                 set = function(info, v)
                     NugPlateAurasDB.auraSize = tonumber(v)
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
                 min = 1,
                 max = 100,
@@ -132,7 +132,7 @@ function NugPlateAuras:CreateGUI()
                 get = function(info) return NugPlateAurasDB.auraOffsetX end,
                 set = function(info, v)
                     NugPlateAurasDB.auraOffsetX = tonumber(v)
-                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeader)
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
                 end,
                 min = -30,
                 max = 30,

@@ -1,6 +1,6 @@
 local addonName, ns = ...
 
-function NugPlateAuras:CreateMirrorButton(parent, index)
+function NugPlateAuras:CreateMirrorButton(parent, db, index)
     local db = NugPlateAurasDB
 
     local mirror = CreateFrame("Button", parent:GetName().."AuraFrame"..index, parent, "ActionButtonTemplate")
@@ -30,8 +30,7 @@ local MakeBorder = function(self, tex, left, right, top, bottom, level)
     return t
 end
 
-function NugPlateAuras:CreateSimpleButton(parent, index)
-    local db = NugPlateAurasDB
+function NugPlateAuras:CreateSimpleButton(parent, db, index)
 
     local f = CreateFrame("Frame", parent:GetName().."AuraFrame"..index, parent)
 

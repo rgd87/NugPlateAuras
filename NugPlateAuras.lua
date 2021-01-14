@@ -77,7 +77,7 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
             end)
         end
 
-        if db.enableBuffGains then
+        if db.profile.enableBuffGains then
             if isClassic then
                 LibClassicDurations.RegisterCallback(self, "UNIT_BUFF_GAINED", function(event, unit, spellID)
                     self:UNIT_AURA_GAINED(event, unit, spellID, "BUFF")
@@ -96,7 +96,7 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
             end
         end)
 
-        if Masque and db.enableMasque then
+        if Masque and db.profile.enableMasque then
             ns.MasqueGroup = Masque:Group(addonName, "NugPlateAuras")
         end
 
@@ -113,13 +113,24 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
         NugPlateAuras:HookOptionsFrame()
     end
 end
-function NugPlateAuras:PLAYER_LOGOUT(event)
-    RemoveDefaults(db, defaults)
+
+function NugPlateAuras:Reconfigure()
+    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
 end
 
 function NugPlateAuras.NAME_PLATE_CREATED(self, event, np)
-    if not np.NugPlateAurasFrame then
-        self:CreateHeader(np)
+    if not np.NugPlateHeaders then
+        np.NugPlateHeaders = {
+            buffs = self:CreateHeader(np, "buffs"),
+            debuffs = self:CreateHeader(np, "debuffs"),
+        }
+
+        local headers = np.NugPlateHeaders
+        if db.profile.enableBuffGains then
+            headers.iconPool = NugPlateAuras:CreateFloatingIconPool(headers.buffs)
+            headers.iconPool.Reconfigure = function() end
+            headers.iconPool.auras = {}
+        end
     end
 end
 
@@ -129,7 +140,7 @@ function NugPlateAuras.NAME_PLATE_UNIT_ADDED(self, event, unit)
     activePlateUnits[unit] = true
     PlateGUIDtoUnit[UnitGUID(unit)] = unit
     self:UNIT_AURA(event, unit)
-    -- if not np.NugPlateAurasFrame then
+    -- if not np.NugPlateHeaders then
     --     self:CreateHeader(np)
     -- end
 end
@@ -138,28 +149,32 @@ function NugPlateAuras.NAME_PLATE_UNIT_REMOVED(self, event, unit)
     local np = C_NamePlate.GetNamePlateForUnit(unit)
     activePlateUnits[unit] = nil
     PlateGUIDtoUnit[UnitGUID(unit)] = nil
-    if np.NugPlateAurasFrame then
-        for _, aura in ipairs(np.NugPlateAurasFrame.auras) do
-            aura:Hide()
+    if np.NugPlateHeaders then
+        for headerType, hdr in pairs(np.NugPlateHeaders) do
+            for _, aura in ipairs(hdr.auras) do
+                aura:Hide()
+            end
         end
     end
 end
 
 
-local RepositionAuraFrames = function(hdr)
-    local size = db.auraSize
+local PlateHeader = {}
+function PlateHeader.RepositionAuraFrames(hdr)
+    local dbh = db.profile[hdr.headerType]
+    local size = dbh.auraSize
     local numAuras = #hdr.auras
-    local _, orientation = ns.Reverse(db.auraGrowth)
+    local _, orientation = ns.Reverse(dbh.auraGrowth)
 
-    local p1 = ns.Reverse(db.auraGrowth)
+    local p1 = ns.Reverse(dbh.auraGrowth)
     local p2 = orientation == "VERTICAL" and "LEFT" or "TOP"
     local p = orientation == "VERTICAL" and p1..p2 or p2..p1
     local mp = ns.Reverse(p, orientation)
-    local xgap = orientation == "HORIZONTAL" and db.auraGap or 0
-    xgap = db.auraGrowth == "RIGHT" and xgap or -xgap
+    local xgap = orientation == "HORIZONTAL" and dbh.auraGap or 0
+    xgap = dbh.auraGrowth == "RIGHT" and xgap or -xgap
 
-    local ygap = orientation == "VERTICAL" and db.auraGap or 0
-    ygap = db.auraGrowth == "TOP" and ygap or -ygap
+    local ygap = orientation == "VERTICAL" and dbh.auraGap or 0
+    ygap = dbh.auraGrowth == "TOP" and ygap or -ygap
 
     for i=1, numAuras do
         local btn = hdr.auras[i]
@@ -174,31 +189,54 @@ local RepositionAuraFrames = function(hdr)
     end
 end
 
-local AddAuraFrameToHeader = function(self, auraFrame)
-    table.insert(self.auras, auraFrame)
-    self:RepositionAuraFrames()
+function PlateHeader.AddAura(hdr, auraFrame)
+    table.insert(hdr.auras, auraFrame)
+    hdr:RepositionAuraFrames()
 end
-function NugPlateAuras:CreateHeader(parent)
-    local hdr = CreateFrame("Frame", "$parentNPAHeader", parent)
-    parent.NugPlateAurasFrame = hdr
+
+
+function PlateHeader.Reconfigure(hdr, unit)
+    local headerType = hdr.headerType
+    local dbh = db.profile[headerType]
+
+    local curMax = db.maxAuras
+    local numAuras = #hdr.auras
+    if numAuras > curMax then
+        for i=curMax, #hdr.auras do
+            hdr.auras[i]:Hide()
+        end
+    end
+
+    hdr:ClearAllPoints()
+    hdr:SetPoint(ns.Reverse(dbh.attachPoint), hdr:GetParent(), dbh.attachPoint, dbh.npOffsetX, dbh.npOffsetY)
+
+    hdr:RepositionAuraFrames()
+
+    NugPlateAuras:UNIT_AURA(nil, unit)
+end
+
+function NugPlateAuras:CreateHeader(parent, headerType)
+    local htu = string.upper(headerType)
+    local hdr = CreateFrame("Frame", "$parentNPAHeader"..htu, parent)
+
+    Mixin(hdr, PlateHeader)
+
+    local dbh = db.profile[headerType]
+    hdr.headerType = headerType
 
     -- local t = hdr:CreateTexture("ARTWORK")
     -- t:SetTexture("Interface\\BUTTONS\\WHITE8X8")
     -- t:SetAllPoints(hdr)
 
     hdr:SetSize(10,10)
-    if db.attachPoint == "TOP" then
-        -- hdr:SetPoint("BOTTOM", parent, "TOP", db.npOffsetX, db.npOffsetY)
-        hdr:SetPoint(ns.Reverse(db.attachPoint), parent, db.attachPoint, db.npOffsetX, db.npOffsetY)
+    if dbh.attachPoint == "TOP" then
+        -- hdr:SetPoint("BOTTOM", parent, "TOP", dbh.npOffsetX, dbh.npOffsetY)
+        hdr:SetPoint(ns.Reverse(dbh.attachPoint), parent, dbh.attachPoint, dbh.npOffsetX, dbh.npOffsetY)
     else
-        hdr:SetPoint(ns.Reverse(db.attachPoint), parent, db.attachPoint, db.npOffsetX, db.npOffsetY)
+        hdr:SetPoint(ns.Reverse(dbh.attachPoint), parent, dbh.attachPoint, dbh.npOffsetX, dbh.npOffsetY)
     end
     hdr.auras = { }
-    hdr.AddAura = AddAuraFrameToHeader
-    hdr.RepositionAuraFrames = RepositionAuraFrames
-    if db.enableBuffGains then
-        hdr.iconPool = NugPlateAuras:CreateFloatingIconPool(hdr)
-    end
+
     return hdr
 end
 
@@ -273,14 +311,28 @@ end
 
 
 local sortfunc = function(a,b) return a[3] > b[3] end
-local orderedAuras = {}
+local ordered = {
+    buffs = {},
+    debuffs = {},
+}
+local orderedAuras = ordered.debuffs
+local orderedBuffs = ordered.buffs
+
+local headersMerged = { "debuffs" }
+local headersSplit = { "buffs", "debuffs" }
+
 function NugPlateAuras:UNIT_AURA(event, unit)
     if activePlateUnits[unit] then
         local np = C_NamePlate.GetNamePlateForUnit(unit)
-        local hdr = np.NugPlateAurasFrame
-        local PRIORITY_THRESHOLD = db.priorityThreshold
-        local auras = hdr.auras
+        local hdrTable = np.NugPlateHeaders
 
+        local db_buffs = db.profile["buffs"]
+        local db_debuffs = db.profile["debuffs"]
+
+        local BUFF_PRIORITY_THRESHOLD = db_buffs.priorityThreshold
+        local DEBUFF_PRIORITY_THRESHOLD = db_debuffs.priorityThreshold
+
+        table.wipe(orderedBuffs)
         table.wipe(orderedAuras)
 
         for i=1, 100 do
@@ -288,17 +340,17 @@ function NugPlateAuras:UNIT_AURA(event, unit)
             if not name then break end
 
             local prio, spellType = LibAuraTypes.GetAuraInfo(spellID, "ENEMY")
-            if prio and prio > PRIORITY_THRESHOLD then
-                table.insert(orderedAuras, { "HARMFUL", i, prio})
+            if prio and prio > DEBUFF_PRIORITY_THRESHOLD then
+                table.insert(orderedBuffs, { "HARMFUL", i, prio})
             end
         end
-        -- TODO: Combine after testing in classic
+
         for i=1, 100 do
             local name, icon, count, debuffType, duration, expirationTime, caster, _,_, spellID, canApplyAura, isBossAura = UnitAura(unit, i, "HELPFUL")
             if not name then break end
 
             local prio, spellType = LibAuraTypes.GetAuraInfo(spellID, "ENEMY")
-            if prio and prio > PRIORITY_THRESHOLD then
+            if prio and prio > BUFF_PRIORITY_THRESHOLD then
                 table.insert(orderedAuras, { "HELPFUL", i, prio})
             end
         end
@@ -310,83 +362,99 @@ function NugPlateAuras:UNIT_AURA(event, unit)
             end
         end
 
-        table.sort(orderedAuras, sortfunc)
-
-        local shown = 0
-        local headerLength = 0
-        local AURA_MAX_DISPLAY = db.maxAuras
-
-        for i=1,100 do
-            if shown == AURA_MAX_DISPLAY then break end
-
-            local auraTable = orderedAuras[i]
-            if not auraTable then
-                for j=i,AURA_MAX_DISPLAY do
-                    if auras[j] then auras[j]:Hide()
-                    else break end
-                end
-                break
-            end
-
-            local filter, index, priority = unpack(auraTable)
-            local name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID
-            if index == -1 then
-                spellID, name, icon, duration, expirationTime = LibSpellLocks:GetSpellLockInfo(unit)
-            else
-                name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID = UnitAura(unit, index, filter)
-            end
-
-            local btn = auras[i]
-            if not btn then
-                if db.enableMasque then
-                    btn = self:CreateMirrorButton(hdr, i)
-                else
-                    btn = self:CreateSimpleButton(hdr, i)
-                end
-                hdr:AddAura(btn)
-            end
-
-            btn.icon:SetTexture(icon)
-            btn.cooldown:SetCooldown(expirationTime-duration, duration)
-            local scale = 0.8 + 1.2*priority/100
-            btn:SetScale(scale)
-
-            if priority >= 90 then
-                -- LibCustomGlow.AutoCastGlow_Start(btn,{1,1,1,1}, 12, 0.3, 0.7, 0, 0, nil, nil )
-                local thickness = 2
-                local freq = 0.3
-                local length = 1
-                LibCustomGlow.PixelGlow_Start(btn,{1,1,1,1}, 12, freq, length, thickness, 0, 0, nil, nil )
-            else
-                -- LibCustomGlow.AutoCastGlow_Stop(btn)
-                LibCustomGlow.PixelGlow_Stop(btn)
-            end
-
-            btn:Show()
-
-            headerLength = headerLength + (db.auraSize*scale)
-            if shown > 0 then
-                headerLength = headerLength + db.auraGap
-            end
-
-            shown = shown + 1
-
+        local headers
+        headers = headersSplit
+        if not db.profile.splitAuras then
+            tAppendAll(orderedAuras, orderedBuffs)
+            -- headers = headersMerged
+        else
+            -- headers = headersSplit
+            table.sort(orderedBuffs, sortfunc)
         end
 
-        if shown > 0 then
-            local _, orientation = ns.Reverse(db.auraGrowth)
-            if orientation == "HORIZONTAL" then
-                hdr:SetWidth(headerLength)
-                hdr:SetHeight(10)
-            else
-                hdr:SetHeight(headerLength)
-                hdr:SetWidth(10)
+        table.sort(orderedAuras, sortfunc)
+
+        for _, headerType in ipairs(headers) do
+
+            local hdr = hdrTable[headerType]
+            local shown = 0
+            local headerLength = 0
+            local dbh = db.profile[headerType]
+            local AURA_MAX_DISPLAY = dbh.maxAuras
+            local auras = hdr.auras
+
+            for i=1,100 do
+                if shown == AURA_MAX_DISPLAY then break end
+
+                local auraTable = ordered[headerType][i]
+                if not auraTable then
+                    for j=i,AURA_MAX_DISPLAY do
+                        if auras[j] then auras[j]:Hide()
+                        else break end
+                    end
+                    break
+                end
+
+                local filter, index, priority = unpack(auraTable)
+                local name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID
+                if index == -1 then
+                    spellID, name, icon, duration, expirationTime = LibSpellLocks:GetSpellLockInfo(unit)
+                else
+                    name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID = UnitAura(unit, index, filter)
+                end
+
+                local btn = auras[i]
+                if not btn then
+                    if dbh.enableMasque then
+                        btn = self:CreateMirrorButton(hdr, dbh, i)
+                    else
+                        btn = self:CreateSimpleButton(hdr, dbh, i)
+                    end
+                    hdr:AddAura(btn)
+                end
+
+                btn.icon:SetTexture(icon)
+                btn.cooldown:SetCooldown(expirationTime-duration, duration)
+                local scale = 0.8 + 1.2*priority/100
+                btn:SetScale(scale)
+
+                if priority >= 90 then
+                    -- LibCustomGlow.AutoCastGlow_Start(btn,{1,1,1,1}, 12, 0.3, 0.7, 0, 0, nil, nil )
+                    local thickness = 2
+                    local freq = 0.3
+                    local length = 1
+                    LibCustomGlow.PixelGlow_Start(btn,{1,1,1,1}, 12, freq, length, thickness, 0, 0, nil, nil )
+                else
+                    -- LibCustomGlow.AutoCastGlow_Stop(btn)
+                    LibCustomGlow.PixelGlow_Stop(btn)
+                end
+
+                btn:Show()
+
+                headerLength = headerLength + (dbh.auraSize*scale)
+                if shown > 0 then
+                    headerLength = headerLength + dbh.auraGap
+                end
+
+                shown = shown + 1
+
             end
-            -- hdr:Show()
-        else
-            hdr:SetWidth(10)
-            hdr:SetHeight(10)
-            -- hdr:Hide()
+
+            if shown > 0 then
+                local _, orientation = ns.Reverse(dbh.auraGrowth)
+                if orientation == "HORIZONTAL" then
+                    hdr:SetWidth(headerLength)
+                    hdr:SetHeight(10)
+                else
+                    hdr:SetHeight(headerLength)
+                    hdr:SetWidth(10)
+                end
+                -- hdr:Show()
+            else
+                hdr:SetWidth(10)
+                hdr:SetHeight(10)
+                -- hdr:Hide()
+            end
         end
     end
 end
@@ -400,23 +468,11 @@ function NugPlateAuras:ForEachNameplate(func)
     end
 end
 
-function NugPlateAuras.ReconfigureHeader(unit, np)
-    local hdr = np.NugPlateAurasFrame
-    local curMax = db.maxAuras
-    local numAuras = #hdr.auras
-    if numAuras > curMax then
-        for i=curMax, #hdr.auras do
-            hdr.auras[i]:Hide()
-        end
+function NugPlateAuras.ReconfigureHeaders(unit, np)
+    local headers = np.NugPlateHeaders
+    for headerType, hdr in pairs(headers) do
+        hdr:Reconfigure(unit)
     end
-
-    hdr:ClearAllPoints()
-    hdr:SetPoint(ns.Reverse(db.attachPoint), hdr:GetParent(), db.attachPoint, db.npOffsetX, db.npOffsetY)
-    -- hdr:SetPoint("BOTTOM", hdr:GetParent(), "TOP", db.npOffsetX, db.npOffsetY)
-
-    hdr:RepositionAuraFrames()
-
-    NugPlateAuras:UNIT_AURA(nil, unit)
 end
 
 function NugPlateAuras.UpdateAuras(unit, np)
