@@ -468,6 +468,12 @@ function NugPlateAuras:UNIT_AURA_GAINED(event, unit, spellID, auraType)
         local hdr = np.NugPlateAurasFrame
         local f, isNew = hdr.iconPool:Acquire()
 
+        if spellID == 336126 or spellID == 336135 then -- medallion and adaptation
+            f.icon:SetScale(3)
+        else
+            f.icon:SetScale(1)
+        end
+
         local name, _, texture = GetSpellInfo(spellID)
         f.icon:SetTexture(texture)
         f:Show()
