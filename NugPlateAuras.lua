@@ -167,7 +167,10 @@ function PlateHeader.RepositionAuraFrames(hdr)
     local _, orientation = ns.Reverse(dbh.auraGrowth)
 
     local p1 = ns.Reverse(dbh.auraGrowth)
-    local p2 = orientation == "VERTICAL" and "LEFT" or "TOP"
+
+    local vJustPoint = dbh.attachPoint == "TOP" and "BOTTOM" or "TOP"
+
+    local p2 = orientation == "VERTICAL" and "LEFT" or vJustPoint
     local p = orientation == "VERTICAL" and p1..p2 or p2..p1
     local mp = ns.Reverse(p, orientation)
     local xgap = orientation == "HORIZONTAL" and dbh.auraGap or 0
@@ -199,7 +202,7 @@ function PlateHeader.Reconfigure(hdr, unit)
     local headerType = hdr.headerType
     local dbh = db.profile[headerType]
 
-    local curMax = db.maxAuras
+    local curMax = dbh.maxAuras
     local numAuras = #hdr.auras
     if numAuras > curMax then
         for i=curMax, #hdr.auras do
@@ -341,7 +344,7 @@ function NugPlateAuras:UNIT_AURA(event, unit)
 
             local prio, spellType = LibAuraTypes.GetAuraInfo(spellID, "ENEMY")
             if prio and prio > DEBUFF_PRIORITY_THRESHOLD then
-                table.insert(orderedBuffs, { "HARMFUL", i, prio})
+                table.insert(orderedAuras, { "HARMFUL", i, prio})
             end
         end
 
@@ -351,7 +354,7 @@ function NugPlateAuras:UNIT_AURA(event, unit)
 
             local prio, spellType = LibAuraTypes.GetAuraInfo(spellID, "ENEMY")
             if prio and prio > BUFF_PRIORITY_THRESHOLD then
-                table.insert(orderedAuras, { "HELPFUL", i, prio})
+                table.insert(orderedBuffs, { "HELPFUL", i, prio})
             end
         end
 
@@ -496,13 +499,14 @@ function NugPlateAuras:COMBAT_LOG_EVENT_UNFILTERED(event)
     end
 end
 
+local sampleBuffsIDs = { 17, 122470, 336126, 336135, 122278, 871, 1715, 47536, 194249, 1044, 8178, 5277, }
 function NugPlateAuras:TestFloatingIcons()
     local unit
     for i=1,20 do
         unit = "nameplate"..i
         if UnitExists(unit) and UnitReaction(unit, "player") < 5 then break end
     end
-    self:UNIT_AURA_GAINED(nil, unit, 17, "BUFF")
+    self:UNIT_AURA_GAINED(nil, unit, sampleBuffsIDs[math.random(#sampleBuffsIDs)], "BUFF")
 end
 
 function NugPlateAuras:TestAuras()
@@ -521,13 +525,13 @@ end
 function NugPlateAuras:UNIT_AURA_GAINED(event, unit, spellID, auraType)
     if activePlateUnits[unit] then
         local np = C_NamePlate.GetNamePlateForUnit(unit)
-        local hdr = np.NugPlateAurasFrame
-        local f, isNew = hdr.iconPool:Acquire()
+        local headers = np.NugPlateHeaders
+        local f, isNew = headers.iconPool:Acquire()
 
         if spellID == 336126 or spellID == 336135 then -- medallion and adaptation
-            f.icon:SetScale(3)
+            f:SetScale(2)
         else
-            f.icon:SetScale(1)
+            f:SetScale(1)
         end
 
         local name, _, texture = GetSpellInfo(spellID)
