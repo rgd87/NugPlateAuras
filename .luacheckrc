@@ -114,4 +114,7 @@ globals = {
     "GetTime",
     "UnitReaction",
     "UnitCanAttack",
+    "Mixin",
+    "tAppendAll",
+
 }
