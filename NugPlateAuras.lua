@@ -29,14 +29,14 @@ local defaults = {
         enableBuffGains = true,
         splitAuras = true,
         buffs = {
-            attachPoint = "TOP",
+            attachPoint = "RIGHT",
             auraGrowth = "RIGHT",
             maxAuras = 3,
             priorityThreshold = 50,
-            auraSize = 25,
+            auraSize = 21,
             auraGap = 2,
-            npOffsetX = 0,
-            npOffsetY = 10,
+            npOffsetX = 5,
+            npOffsetY = 0,
         },
         debuffs = {
             attachPoint = "TOP",
@@ -366,12 +366,11 @@ function NugPlateAuras:UNIT_AURA(event, unit)
         end
 
         local headers
-        headers = headersSplit
         if not db.profile.splitAuras then
             tAppendAll(orderedAuras, orderedBuffs)
-            -- headers = headersMerged
+            headers = headersMerged
         else
-            -- headers = headersSplit
+            headers = headersSplit
             table.sort(orderedBuffs, sortfunc)
         end
 
@@ -475,6 +474,11 @@ function NugPlateAuras.ReconfigureHeaders(unit, np)
     local headers = np.NugPlateHeaders
     for headerType, hdr in pairs(headers) do
         hdr:Reconfigure(unit)
+    end
+    if not NugPlateAuras.db.profile.splitAuras then
+        headers.buffs:Hide()
+    else
+        headers.buffs:Show()
     end
 end
 

@@ -178,10 +178,20 @@ function NugPlateAuras:CreateGUI()
                     },
                 },
             },
-
+            splitAuras = {
+                name = L"Split Buffs",
+                type = "toggle",
+                order = 3.8,
+                get = function(info) return NugPlateAuras.db.profile.splitAuras end,
+                set = function(info, v)
+                    NugPlateAuras.db.profile.splitAuras = not NugPlateAuras.db.profile.splitAuras
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
+                end
+            },
             buffs = {
                 type = 'group',
                 name = "Buffs",
+                disabled = function() return not NugPlateAuras.db.profile.splitAuras end,
                 guiInline = true,
                 order = 4,
                 args = {
