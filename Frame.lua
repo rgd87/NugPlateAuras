@@ -111,10 +111,10 @@ function NugPlateAuras:CreateProgressButton(parent, index)
 end
 
 local PoolIconResetterFunc = function(pool, f)
-    local db = NugPlateAurasDB
+    local db = NugPlateAuras.db.profile.buffGains
 
-    f:SetHeight(25)
-    f:SetWidth(25)
+    f:SetHeight(db.auraSize)
+    f:SetWidth(db.auraSize)
 
     f.ag:Stop()
 
@@ -125,17 +125,17 @@ local PoolIconResetterFunc = function(pool, f)
     local translateY = math.cos(math.rad(angle))*distance
     f.ag.t1:SetOffset(translateX, translateY)
 
-    local hdr = pool.parent
-    f:SetPoint("BOTTOM", hdr, "BOTTOM", db.floatingOffsetX, db.floatingOffsetY)
+    local np = pool.parent
+    f:SetPoint("BOTTOM", np, "TOP", 0, 0)
 end
 
 local PoolIconCreationFunc = function(pool)
-    local hdr = pool.parent
+    local np = pool.parent
     local f
     -- if ns.MasqueGroup then
-    --     f = CreateFrame("Button", nil, hdr, "ActionButtonTemplate")
+    --     f = CreateFrame("Button", nil, np, "ActionButtonTemplate")
     -- else
-        f = CreateFrame("Frame", nil, hdr)
+        f = CreateFrame("Frame", nil, np)
     -- end
 
     f:EnableMouse(false)
@@ -143,8 +143,6 @@ local PoolIconCreationFunc = function(pool)
 
     -- f:SetHeight(25)
     -- f:SetWidth(25)
-
-    f:SetPoint("BOTTOM", hdr, "BOTTOM",0, -0)
 
 
 
@@ -214,13 +212,28 @@ local PoolIconCreationFunc = function(pool)
     return f
 end
 
-function NugPlateAuras:CreateFloatingIconPool(hdr)
+local function FloatingIconHeader_Reconfigure(hdr, unit)
+    local headerType = hdr.headerType
+    local dbh = NugPlateAuras.db.profile[headerType]
+
+    hdr:SetPoint("BOTTOM", hdr:GetParent(), "TOP", dbh.npOffsetX, dbh.npOffsetY)
+    hdr:SetSize(dbh.auraSize, dbh.auraSize)
+end
+
+function NugPlateAuras:CreateFloatingIconPool(parent)
+    local hdr = CreateFrame("Frame", "$parentNPAHeaderBuffGains", parent)
+
+    hdr.headerType = "buffGains"
+    hdr.Reconfigure = FloatingIconHeader_Reconfigure
+    hdr:Reconfigure()
+
     local template = nil
     local resetterFunc = PoolIconResetterFunc
     local iconPool = CreateFramePool("Frame", hdr, template, resetterFunc)
     iconPool.creationFunc = PoolIconCreationFunc
+    hdr.pool = iconPool
 
-    return iconPool
+    return hdr
 end
 
 local MIRROR_POINTS = {

@@ -48,8 +48,11 @@ local defaults = {
             npOffsetX = 0,
             npOffsetY = 10,
         },
-        floatingOffsetX = 0,
-        floatingOffsetY = -15,
+        buffGains = {
+            auraSize = 25,
+            npOffsetX = 0,
+            npOffsetY = -25,
+        },
     }
 }
 
@@ -127,9 +130,8 @@ function NugPlateAuras.NAME_PLATE_CREATED(self, event, np)
 
         local headers = np.NugPlateHeaders
         if db.profile.enableBuffGains then
-            headers.iconPool = NugPlateAuras:CreateFloatingIconPool(headers.buffs)
-            headers.iconPool.Reconfigure = function() end
-            headers.iconPool.auras = {}
+            np.NugPlateHeaders["buffGains"] = NugPlateAuras:CreateFloatingIconPool(np)
+            -- np.NugPlateHeaders["buffGains"].auras = {}
         end
     end
 end
@@ -151,8 +153,10 @@ function NugPlateAuras.NAME_PLATE_UNIT_REMOVED(self, event, unit)
     PlateGUIDtoUnit[UnitGUID(unit)] = nil
     if np.NugPlateHeaders then
         for headerType, hdr in pairs(np.NugPlateHeaders) do
-            for _, aura in ipairs(hdr.auras) do
-                aura:Hide()
+            if hdr.auras then
+                for _, aura in ipairs(hdr.auras) do
+                    aura:Hide()
+                end
             end
         end
     end
@@ -530,7 +534,7 @@ function NugPlateAuras:UNIT_AURA_GAINED(event, unit, spellID, auraType)
     if activePlateUnits[unit] then
         local np = C_NamePlate.GetNamePlateForUnit(unit)
         local headers = np.NugPlateHeaders
-        local f, isNew = headers.iconPool:Acquire()
+        local f, isNew = headers.buffGains.pool:Acquire()
 
         if spellID == 336126 or spellID == 336135 then -- medallion and adaptation
             f:SetScale(2)
