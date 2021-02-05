@@ -37,19 +37,7 @@ function NugPlateAuras:CreateGUI()
                     ReloadUI()
                 end
             },
-            buffGains = {
-                name = L"Enable Buff Gains",
-                type = "toggle",
-                width = "double",
-                order = 1.2,
-                confirm = true,
-                confirmText = L"Warning: Requires UI reloading.",
-                get = function(info) return NugPlateAuras.db.profile.enableBuffGains end,
-                set = function(info, v)
-                    NugPlateAuras.db.profile.enableBuffGains = not NugPlateAuras.db.profile.enableBuffGains
-                    ReloadUI()
-                end
-            },
+
             debuffs = {
                 type = 'group',
                 name = "Debuffs",
@@ -317,8 +305,69 @@ function NugPlateAuras:CreateGUI()
                     },
                 },
             },
+            buffGains = {
+                name = L"Enable Buff Gains",
+                type = "toggle",
+                width = "double",
+                order = 6,
+                confirm = true,
+                confirmText = L"Warning: Requires UI reloading.",
+                get = function(info) return NugPlateAuras.db.profile.enableBuffGains end,
+                set = function(info, v)
+                    NugPlateAuras.db.profile.enableBuffGains = not NugPlateAuras.db.profile.enableBuffGains
+                    ReloadUI()
+                end
+            },
+            buffGainsOpts = {
+                type = 'group',
+                name = "Buffs",
+                disabled = function() return not NugPlateAuras.db.profile.enableBuffGains end,
+                guiInline = true,
+                order = 7,
+                args = {
+                    npOffsetX = {
+                        name = L"Nameplate X Offset",
+                        type = "range",
+                        get = function(info) return NugPlateAuras.db.profile.buffGains.npOffsetX end,
+                        set = function(info, v)
+                            NugPlateAuras.db.profile.buffGains.npOffsetX = tonumber(v)
+                            NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
+                        end,
+                        min = -150,
+                        max = 150,
+                        step = 0.1,
+                        order = 2,
+                    },
+                    npOffsetY = {
+                        name = L"Nameplate Y Offset",
+                        type = "range",
+                        get = function(info) return NugPlateAuras.db.profile.buffGains.npOffsetY end,
+                        set = function(info, v)
+                            NugPlateAuras.db.profile.buffGains.npOffsetY = tonumber(v)
+                            NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
+                        end,
+                        min = -150,
+                        max = 150,
+                        step = 0.1,
+                        order = 3,
+                    },
 
-
+                    baseAuraSize = {
+                        name = L"Base Aura Size",
+                        width = "double",
+                        type = "range",
+                        get = function(info) return NugPlateAuras.db.profile.buffGains.auraSize end,
+                        set = function(info, v)
+                            NugPlateAuras.db.profile.buffGains.auraSize = tonumber(v)
+                            NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
+                        end,
+                        min = 1,
+                        max = 100,
+                        step = 1,
+                        order = 5,
+                    },
+                },
+            },
         },
     }
 
