@@ -57,6 +57,16 @@ function NugPlateAuras:CreateSimpleButton(parent, db, index)
     cd:SetPoint("TOPLEFT", border, -border)
     cd:SetPoint("BOTTOMRIGHT", -border, border)
 
+    local stackframe = CreateFrame("Frame", nil, f)
+    stackframe:SetAllPoints(f)
+    local stacktext = stackframe:CreateFontString(nil,"ARTWORK")
+    stacktext:SetDrawLayer("ARTWORK",1)
+    stacktext:SetJustifyH"RIGHT"
+    stacktext:SetPoint("BOTTOMRIGHT", stackframe, "BOTTOMRIGHT", 0,0)
+    stacktext:SetTextColor(1,1,1)
+    stacktext:SetFontObject("NumberFontNormal")
+    f.stacktext = stacktext
+
     return f
 end
 

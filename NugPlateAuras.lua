@@ -261,7 +261,11 @@ local function MakeFakeAuraFromID(spellID, filter)
     local name, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellID)
     local duration = nil
     local expirationTime = nil
-    return { name, icon, 1, nil, duration, expirationTime, nil, nil, nil, spellID }
+    local count = 1
+    if math.random(4) == 1 then
+        count = math.random(5)
+    end
+    return { name, icon, count, nil, duration, expirationTime, nil, nil, nil, spellID }
 end
 
 local FakeAuras = {
@@ -404,11 +408,12 @@ function NugPlateAuras:UNIT_AURA(event, unit)
                 end
 
                 local filter, index, priority = unpack(auraTable)
-                local name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID
+                local name, icon, count, debuffType, duration, expirationTime, _, _,_, spellID
                 if index == -1 then
                     spellID, name, icon, duration, expirationTime = LibSpellLocks:GetSpellLockInfo(unit)
+                    count = 0
                 else
-                    name, icon, _, debuffType, duration, expirationTime, _, _,_, spellID = UnitAura(unit, index, filter)
+                    name, icon, count, debuffType, duration, expirationTime, _, _,_, spellID = UnitAura(unit, index, filter)
                 end
 
                 local btn = auras[i]
@@ -423,6 +428,7 @@ function NugPlateAuras:UNIT_AURA(event, unit)
 
                 btn.icon:SetTexture(icon)
                 btn.cooldown:SetCooldown(expirationTime-duration, duration)
+                btn.stacktext:SetText(count > 1 and count or nil)
                 local scale = 0.8 + 1.2*priority/100
                 btn:SetScale(scale)
 
