@@ -7,6 +7,7 @@ NugPlateAuras:SetScript("OnEvent", function(self, event, ...)
 end)
 
 local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 local db
 local LibAuraTypes
@@ -22,6 +23,9 @@ NugPlateAuras:RegisterEvent("ADDON_LOADED")
 local UnitAura = _G.UnitAura
 local activePlateUnits = {}
 local PlateGUIDtoUnit = {}
+
+local BUFF_PRIORITY_THRESHOLD
+local DEBUFF_PRIORITY_THRESHOLD
 
 local defaults = {
     profile = {
@@ -43,6 +47,7 @@ local defaults = {
             auraGrowth = "RIGHT",
             maxAuras = 3,
             priorityThreshold = 50,
+            priorityThresholdPVE = 50,
             auraSize = 25,
             auraGap = 2,
             npOffsetX = 0,
@@ -103,9 +108,12 @@ function NugPlateAuras.ADDON_LOADED(self,event,arg1)
             ns.MasqueGroup = Masque:Group(addonName, "NugPlateAuras")
         end
 
+        self:UpdateThreshold()
         self:RegisterEvent("NAME_PLATE_CREATED")
         self:RegisterEvent("NAME_PLATE_UNIT_ADDED")
         self:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+
+        self:RegisterEvent("PLAYER_ENTERING_WORLD") -- check instance info
 
         self:RegisterEvent("UNIT_AURA")
 
@@ -333,12 +341,6 @@ function NugPlateAuras:UNIT_AURA(event, unit)
         local np = C_NamePlate.GetNamePlateForUnit(unit)
         local hdrTable = np.NugPlateHeaders
 
-        local db_buffs = db.profile["buffs"]
-        local db_debuffs = db.profile["debuffs"]
-
-        local BUFF_PRIORITY_THRESHOLD = db_buffs.priorityThreshold
-        local DEBUFF_PRIORITY_THRESHOLD = db_debuffs.priorityThreshold
-
         table.wipe(orderedBuffs)
         table.wipe(orderedAuras)
 
@@ -484,6 +486,32 @@ function NugPlateAuras.ReconfigureHeaders(unit, np)
     else
         headers.buffs:Show()
     end
+end
+
+function NugPlateAuras:UpdateThreshold()
+    local _, instanceType = GetInstanceInfo()
+    local isPVPInstance = instanceType == "pvp" or instanceType == "arena"
+    local isPVEInstance = instanceType == "party" or instanceType == "raid"
+
+    local isWarModeOn
+    if instanceType == "none" then
+        if isRetail then
+            isWarModeOn = C_PvP.IsWarModeActive()
+        else
+            isWarModeOn = true -- always on in classic
+        end
+    end
+
+    local isPVP = isPVPInstance or isWarModeOn
+
+    local db_buffs = db.profile["buffs"]
+    local db_debuffs = db.profile["debuffs"]
+
+    BUFF_PRIORITY_THRESHOLD = db_buffs.priorityThreshold
+    DEBUFF_PRIORITY_THRESHOLD = isPVP and db_debuffs.priorityThreshold or db_debuffs.priorityThresholdPVE
+end
+function NugPlateAuras:PLAYER_ENTERING_WORLD()
+    self:UpdateThreshold()
 end
 
 function NugPlateAuras.UpdateAuras(unit, np)

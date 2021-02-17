@@ -123,12 +123,13 @@ function NugPlateAuras:CreateGUI()
                     },
 
                     priorityThreshold = {
-                        name = L"Priority Threshold",
+                        name = L"Priority Threshold".." (PvP)",
                         width = "full",
                         type = "range",
                         get = function(info) return NugPlateAuras.db.profile.debuffs.priorityThreshold end,
                         set = function(info, v)
                             NugPlateAuras.db.profile.debuffs.priorityThreshold = tonumber(v)
+                            NugPlateAuras:UpdateThreshold()
                             NugPlateAuras:ForEachNameplate(NugPlateAuras.UpdateAuras)
                         end,
                         min = 1,
@@ -136,6 +137,23 @@ function NugPlateAuras:CreateGUI()
                         step = 1,
                         order = 4,
                     },
+
+                    priorityThresholdPVE = {
+                        name = L"Priority Threshold".." (PvE)",
+                        width = "full",
+                        type = "range",
+                        get = function(info) return NugPlateAuras.db.profile.debuffs.priorityThresholdPVE end,
+                        set = function(info, v)
+                            NugPlateAuras.db.profile.debuffs.priorityThresholdPVE = tonumber(v)
+                            NugPlateAuras:UpdateThreshold()
+                            NugPlateAuras:ForEachNameplate(NugPlateAuras.UpdateAuras)
+                        end,
+                        min = 1,
+                        max = 100,
+                        step = 1,
+                        order = 4.5,
+                    },
+
 
                     baseAuraSize = {
                         name = L"Base Aura Size",
@@ -268,6 +286,7 @@ function NugPlateAuras:CreateGUI()
                         get = function(info) return NugPlateAuras.db.profile.buffs.priorityThreshold end,
                         set = function(info, v)
                             NugPlateAuras.db.profile.buffs.priorityThreshold = tonumber(v)
+                            NugPlateAuras:UpdateThreshold()
                             NugPlateAuras:ForEachNameplate(NugPlateAuras.UpdateAuras)
                         end,
                         min = 1,

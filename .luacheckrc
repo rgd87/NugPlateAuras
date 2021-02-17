@@ -116,5 +116,6 @@ globals = {
     "UnitCanAttack",
     "Mixin",
     "tAppendAll",
-
+    "GetInstanceInfo",
+    "C_PvP",
 }
