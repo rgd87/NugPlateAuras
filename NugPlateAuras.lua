@@ -268,35 +268,38 @@ local function MakeFakeAuraFromID(spellID, filter)
     return { name, icon, count, nil, duration, expirationTime, nil, nil, nil, spellID }
 end
 
-local FakeAuras = {
-    HELPFUL = {
-        MakeFakeAuraFromID(122470, "HELPFUL"), -- karma
-        MakeFakeAuraFromID(122278, "HELPFUL"), -- Dampen Harm
-        MakeFakeAuraFromID(871, "HELPFUL"), -- Shield Wall
-        MakeFakeAuraFromID(1715, "HELPFUL"), -- Hamstring
-        MakeFakeAuraFromID(47536, "HELPFUL"), -- Rapture
-        MakeFakeAuraFromID(194249, "HELPFUL"), -- Voidform
-        MakeFakeAuraFromID(1044, "HELPFUL"), -- Freedom
-        MakeFakeAuraFromID(8178, "HELPFUL"), -- Grounding
-        MakeFakeAuraFromID(5277, "HELPFUL"), -- Evasion
-    },
-    HARMFUL = {
-        MakeFakeAuraFromID(119381, "HARMFUL"), -- Leg sweep
-        MakeFakeAuraFromID(853, "HARMFUL"), -- Hammer of Justice
-        MakeFakeAuraFromID(115078, "HARMFUL"), -- Paralysis
-        MakeFakeAuraFromID(118, "HARMFUL"), -- Polymorph
-        MakeFakeAuraFromID(23920, "HARMFUL"), -- Spell Reflection
-        MakeFakeAuraFromID(5246, "HARMFUL"), -- Intimidating Shout
-        MakeFakeAuraFromID(15487, "HARMFUL"), -- Silence
-        MakeFakeAuraFromID(64695, "HARMFUL"), -- Earthgrab Totem
-    }
-}
-
+local FakeAuras
 local FakeAuraSlots = {
     HARMFUL = {},
     HELPFUL = {},
 }
 local function GenFakeSlots()
+    if not FakeAuras then
+        FakeAuras = {
+            HELPFUL = {
+                MakeFakeAuraFromID(122470, "HELPFUL"), -- karma
+                MakeFakeAuraFromID(122278, "HELPFUL"), -- Dampen Harm
+                MakeFakeAuraFromID(871, "HELPFUL"), -- Shield Wall
+                MakeFakeAuraFromID(1715, "HELPFUL"), -- Hamstring
+                MakeFakeAuraFromID(47536, "HELPFUL"), -- Rapture
+                MakeFakeAuraFromID(194249, "HELPFUL"), -- Voidform
+                MakeFakeAuraFromID(1044, "HELPFUL"), -- Freedom
+                MakeFakeAuraFromID(8178, "HELPFUL"), -- Grounding
+                MakeFakeAuraFromID(5277, "HELPFUL"), -- Evasion
+            },
+            HARMFUL = {
+                MakeFakeAuraFromID(119381, "HARMFUL"), -- Leg sweep
+                MakeFakeAuraFromID(853, "HARMFUL"), -- Hammer of Justice
+                MakeFakeAuraFromID(115078, "HARMFUL"), -- Paralysis
+                MakeFakeAuraFromID(118, "HARMFUL"), -- Polymorph
+                MakeFakeAuraFromID(23920, "HARMFUL"), -- Spell Reflection
+                MakeFakeAuraFromID(5246, "HARMFUL"), -- Intimidating Shout
+                MakeFakeAuraFromID(15487, "HARMFUL"), -- Silence
+                MakeFakeAuraFromID(64695, "HARMFUL"), -- Earthgrab Totem
+            }
+        }
+    end
+
     local uniqueTable = {}
     local filters = { "HELPFUL", "HARMFUL" }
     for _, filter in ipairs(filters) do
