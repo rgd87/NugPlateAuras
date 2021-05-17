@@ -1,4 +1,4 @@
-## Interface: 90005
+## Interface: 11307
 
 ## Title: NugPlateAuras
 ## SavedVariables: NugPlateAurasDB
@@ -16,6 +16,8 @@ Libs\AceDB-3.0\AceDB-3.0.xml
 Libs\LibAuraTypes\LibAuraTypes.lua
 Libs\LibSpellLocks\LibSpellLocks.lua
 Libs\LibCustomGlow\LibCustomGlow-1.0.xml
+
+Libs\LibClassicDurations\LibClassicDurations.xml
 
 NugPlateAuras.lua
 Frame.lua

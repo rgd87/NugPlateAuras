@@ -13,3 +13,4 @@ externals:
   Libs/LibSpellLocks:
     url: https://github.com/rgd87/LibSpellLocks.git
     tag: master
+  Libs/LibClassicDurations: https://repos.curseforge.com/wow/libclassicdurations
