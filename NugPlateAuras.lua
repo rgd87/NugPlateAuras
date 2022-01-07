@@ -32,6 +32,7 @@ local defaults = {
         enableMasque = false,
         enableBuffGains = true,
         splitAuras = true,
+        staticSize = true,
         buffs = {
             attachPoint = "RIGHT",
             auraGrowth = "RIGHT",
@@ -389,6 +390,11 @@ function NugPlateAuras:UNIT_AURA(event, unit)
 
         table.sort(orderedAuras, sortfunc)
 
+        local enforced_priority
+        if db.profile.staticSize then
+            enforced_priority = 70
+        end
+
         for _, headerType in ipairs(headers) do
 
             local hdr = hdrTable[headerType]
@@ -432,6 +438,8 @@ function NugPlateAuras:UNIT_AURA(event, unit)
                 btn.icon:SetTexture(icon)
                 btn.cooldown:SetCooldown(expirationTime-duration, duration)
                 btn.stacktext:SetText(count > 1 and count or nil)
+
+                priority = enforced_priority or priority
                 local scale = 0.8 + 1.2*priority/100
                 btn:SetScale(scale)
 

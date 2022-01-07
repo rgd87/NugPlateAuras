@@ -37,6 +37,16 @@ function NugPlateAuras:CreateGUI()
                     ReloadUI()
                 end
             },
+            staticSize = {
+                name = L"Static Size",
+                type = "toggle",
+                order = 0.9,
+                get = function(info) return NugPlateAuras.db.profile.staticSize end,
+                set = function(info, v)
+                    NugPlateAuras.db.profile.staticSize = not NugPlateAuras.db.profile.staticSize
+                    NugPlateAuras:ForEachNameplate(NugPlateAuras.ReconfigureHeaders)
+                end
+            },
 
             debuffs = {
                 type = 'group',
