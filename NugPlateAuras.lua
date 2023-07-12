@@ -631,7 +631,7 @@ function NugPlateAuras.SlashCmd(msg)
 end
 
 function NugPlateAuras:HookOptionsFrame()
-    CreateFrame('Frame', nil, InterfaceOptionsFrame):SetScript('OnShow', function(frame)
+    CreateFrame('Frame', nil, SettingsPanel or InterfaceOptionsFrame):SetScript('OnShow', function(frame)
         frame:SetScript('OnShow', nil)
 
         if not self.optionsPanel then

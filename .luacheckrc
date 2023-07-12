@@ -107,6 +107,7 @@ globals = {
     "CreateFrame",
     "CombatLogGetCurrentEventInfo",
     "InterfaceOptionsFrame",
+    "SettingsPanel",
     "CopyTable",
     "GetSpellInfo",
     "CreateFramePool",
