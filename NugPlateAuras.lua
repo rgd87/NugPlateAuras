@@ -19,8 +19,18 @@ local Masque = LibStub("Masque", true)
 local MasqueGroup
 NugPlateAuras:RegisterEvent("ADDON_LOADED")
 
+local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
+local UnpackAuraData = AuraUtil.UnpackAuraData
+local DeprecatedUnitAura = function(unitToken, index, filter)
+    local auraData = GetAuraDataByIndex(unitToken, index, filter);
+    if not auraData then
+        return nil;
+    end
 
-local UnitAura = _G.UnitAura
+    return UnpackAuraData(auraData);
+end
+
+local UnitAura = DeprecatedUnitAura
 local activePlateUnits = {}
 local PlateGUIDtoUnit = {}
 
@@ -257,6 +267,20 @@ function NugPlateAuras:CreateHeader(parent, headerType)
 end
 
 
+if C_Spell.GetSpellInfo then
+    local C_Spell_GetSpellInfo = C_Spell.GetSpellInfo
+    ns.GetSpellInfo = function(spellId)
+        local info = C_Spell_GetSpellInfo(spellId)
+        if info then
+            return info.name, nil, info.iconID
+        end
+    end
+    ns.GetSpellTexture = C_Spell.GetSpellTexture
+else
+    ns.GetSpellInfo = _G.GetSpellInfo
+    ns.GetSpellTexture = _G.GetSpellTexture
+end
+local GetSpellInfo = ns.GetSpellInfo
 local function MakeFakeAuraFromID(spellID, filter)
     local now = GetTime()
     local name, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellID)
@@ -607,6 +631,15 @@ local helpMessage = {
 }
 
 
+
+local function InterfaceOptionsFrame_OpenToCategory(categoryIDOrFrame)
+	if type(categoryIDOrFrame) == "table" then
+		local categoryID = categoryIDOrFrame.name;
+		return Settings.OpenToCategory(categoryID);
+	else
+		return Settings.OpenToCategory(categoryIDOrFrame);
+	end
+end
 NugPlateAuras.Commands = {
     ["gui"] = function(v)
         if not NugPlateAuras.optionsPanel then

@@ -119,4 +119,8 @@ globals = {
     "tAppendAll",
     "GetInstanceInfo",
     "C_PvP",
+    "C_UnitAuras",
+    "AuraUtil",
+    "C_Spell",
+    "Settings",
 }
